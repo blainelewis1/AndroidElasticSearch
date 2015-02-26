@@ -4,12 +4,14 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 import ca.ualberta.ssrg.androidelasticsearch.R;
 import ca.ualberta.ssrg.movies.es.ESMovieManager;
@@ -17,7 +19,7 @@ import ca.ualberta.ssrg.movies.es.Movie;
 import ca.ualberta.ssrg.movies.es.Movies;
 import ca.ualberta.ssrg.movies.es.MoviesController;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements Observer {
 
 	private ListView movieList;
 	private Movies movies;
@@ -40,6 +42,7 @@ public class MainActivity extends Activity {
 		super.onStart();
 
 		movies = new Movies();
+		movies.addObserver(this);
 		moviesViewAdapter = new ArrayAdapter<Movie>(this, R.layout.list_item,movies);
 		movieList.setAdapter(moviesViewAdapter);
 		movieManager = new ESMovieManager("");
@@ -74,11 +77,12 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		
-		
-
+	
 		// Refresh the list when visible
 		// TODO: Search all
+		
+		SearchThread searchThread = new SearchThread("", null);
+		searchThread.start();
 		
 	}
 	
@@ -105,7 +109,14 @@ public class MainActivity extends Activity {
 
 		// TODO: Extract search query from text view
 		
+		TextView searchField = (TextView) findViewById(R.id.editText1);
+		
+		String searchString = searchField.getText().toString(); 
 		// TODO: Run the search thread
+		
+		
+		SearchThread searchThread = new SearchThread(searchString, null);
+		searchThread.start();
 		
 	}
 	
@@ -133,6 +144,20 @@ public class MainActivity extends Activity {
 	class SearchThread extends Thread {
 		// TODO: Implement search thread
 		
+		private final String searchString;
+		private final String field;
+		
+		public SearchThread(String searchString, String field) {
+			this.searchString = searchString;
+			this.field = field;
+		}
+		
+		@Override 
+		public void run() {
+			Log.d("SearchThread", "Running " + searchString);
+			movieManager.searchMovies(searchString, field);				
+		}
+		
 	}
 
 	
@@ -158,4 +183,13 @@ public class MainActivity extends Activity {
 			}
 		}
 	}
+
+
+	@Override
+	public void notifyUpdated(Observable o) {
+
+		notifyUpdated();
+	}
+
+
 }

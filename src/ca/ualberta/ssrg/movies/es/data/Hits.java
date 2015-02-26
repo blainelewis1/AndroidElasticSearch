@@ -1,5 +1,6 @@
 package ca.ualberta.ssrg.movies.es.data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -39,4 +40,18 @@ public class Hits<T> {
 		return "Hits [total=" + total + ", max_score=" + max_score + ", hits="
 				+ hits + "]";
 	}
+	
+	public List<T> getHitsAsList() {
+		ArrayList<T> hits = new ArrayList<T>();
+		
+		for(SearchHit<T> searchHit : hits){
+			hits.add(searchHit.getSource());
+		}
+		
+		
+		return hits;
+		
+		
+	}
+	
 }
